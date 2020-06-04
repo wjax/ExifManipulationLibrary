@@ -36,14 +36,14 @@ namespace ExifManipulationLibrary
                 MagickImage image = new MagickImage(src_imageURI);
 
                 // Retrieve the exif information
-                ExifProfile profile = image.GetExifProfile();
+                var profile = image.GetExifProfile();
 
                 // Check if image contains an exif profile
                 if (profile == null)
                 {
                     profile = new ExifProfile();
 
-                    image.AddProfile(profile);
+                    image.SetProfile(profile);
                     image.Write(@".\without_m.jpg");
                 }
 
@@ -64,7 +64,7 @@ namespace ExifManipulationLibrary
 
                 //profile.SetValue(ExifTag.Or, (UInt16)1);
 
-                image.AddProfile(profile);
+                image.SetProfile(profile);
                 image.Write(dst_imageURI);
 
                 bResult = true;
