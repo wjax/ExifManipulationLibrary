@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExifManipulationLibrary", "ExifManipulationLibrary.csproj", "{EA9FB39F-E865-406B-B866-602F869AC5DB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EA9FB39F-E865-406B-B866-602F869AC5DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA9FB39F-E865-406B-B866-602F869AC5DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA9FB39F-E865-406B-B866-602F869AC5DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA9FB39F-E865-406B-B866-602F869AC5DB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {20D36F5C-D5E8-42A6-82F3-3B384EF325CA}
+	EndGlobalSection
+EndGlobal
