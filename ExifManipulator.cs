@@ -138,7 +138,7 @@ namespace ExifManipulationLibrary
                     if (reader.GetTagValue(ExifTags.DateTimeDigitized, out DateTime datePictureTaken))
                     {
                         if (reader.GetTagValue(ExifTags.SubsecTimeDigitized, out string subSec))
-                            datePictureTaken = datePictureTaken.AddSeconds(double.Parse(subSec, CultureInfo.InvariantCulture) / 1000);
+                            datePictureTaken = AddSubsecTimeDigitized(datePictureTaken, subSec);
 
                         if (assumeUTC)
                             result = datePictureTaken.AsUtc();
@@ -155,6 +155,18 @@ namespace ExifManipulationLibrary
                 throw new ArgumentException("Path does not exist");
 
             return valid;
+        }
+        
+        private static DateTime AddSubsecTimeDigitized (DateTime datePictureTaken, string subSec)
+        {
+            if (subSec != null)
+            {
+                subSec = $"0.{subSec.Trim()}";
+                double dSubSeconds = double.Parse(subSec, CultureInfo.InvariantCulture);
+                return datePictureTaken.AddSeconds(dSubSeconds);
+            }
+            
+            return datePictureTaken;
         }
 
         private static bool ToDateTime(string str, bool assumeUTC, out DateTime result)
