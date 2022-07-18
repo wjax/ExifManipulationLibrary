@@ -1,14 +1,20 @@
-﻿using ImageMagick;
+﻿using ExifLib;
+using ExifManipulationLibrary.Extensions;
+using ImageMagick;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ExifManipulationLibrary
 {
     public class ExifManipulator
     {
+        private static readonly Regex _nullDateTimeMatcher = new Regex(@"^[\s0]{4}[:\s][\s0]{2}[:\s][\s0]{5}[:\s][\s0]{2}[:\s][\s0]{2}$");
+
         private static void DecimalDeg2Triple(double degrees, out int d, out int m, out double s)
         {
             d = (int)degrees;
@@ -59,6 +65,7 @@ namespace ExifManipulationLibrary
                 profile.SetValue(ExifTag.GPSLongitudeRef, lonRef);
 
                 profile.SetValue(ExifTag.GPSAltitude, altitude);
+                profile.SetValue(ExifTag.GPSAltitudeRef, (byte)(alt > 0 ? 0 : 1));
 
                 profile.SetValue(ExifTag.Orientation, (UInt16)1);
 
@@ -75,6 +82,112 @@ namespace ExifManipulationLibrary
             }
 
             return bResult;
+        }
+
+        public static bool GetDateTimeDigitized(string filePath, bool assumeUTC, out DateTime result)
+        {
+            bool valid = false;
+            result = DateTime.MinValue;
+            double secondsDateTime = 0;
+
+            if (filePath != null && System.IO.File.Exists(filePath))
+            {
+                using (var image = new MagickImage(filePath))
+                {
+                    // Retrieve the exif information
+                    var profile = image.GetExifProfile();
+
+                    // Check if image contains an exif profile
+                    if (profile is null)
+                        System.Diagnostics.Debug.WriteLine("Image does not contain exif information.");
+                    else
+                    {
+                        // Write all values to the console
+                        var dateTimeDigitized = profile.GetValue(ExifTag.DateTimeDigitized);
+                        var subSeconds = profile.GetValue(ExifTag.SubsecTimeDigitized);
+
+                        if (dateTimeDigitized != null && ToDateTime(dateTimeDigitized.Value, assumeUTC, out result))
+                        {
+                            if (subSeconds != null && double.TryParse(subSeconds.Value, out double dSubSeconds))
+                                secondsDateTime = dSubSeconds / 100;
+
+                            result = result.AddSeconds(secondsDateTime);
+                            valid = true;
+                        }
+                        else
+                            valid = false;
+
+                    }
+                }
+            }
+
+            return valid;
+        }
+
+        public static bool GetDateTimeDigitizedFast(string filePath, bool assumeUTC, out DateTime result)
+        {
+            bool valid = false;
+            result = DateTime.MinValue;
+
+            if (filePath != null && System.IO.File.Exists(filePath))
+            {
+                // Instantiate the reader
+                using (ExifReader reader = new ExifReader(filePath))
+                {
+                    // Extract the tag data using the ExifTags enumeration
+                    if (reader.GetTagValue(ExifTags.DateTimeDigitized, out DateTime datePictureTaken))
+                    {
+                        if (reader.GetTagValue(ExifTags.SubsecTimeDigitized, out string subSec))
+                            datePictureTaken = datePictureTaken.AddSeconds(double.Parse(subSec, CultureInfo.InvariantCulture) / 1000);
+
+                        if (assumeUTC)
+                            result = datePictureTaken.AsUtc();
+                        else
+                            result = datePictureTaken.AsLocal();
+
+                        valid = true;
+                    }
+                    else
+                        throw new ArgumentException("No Date info in EXIF");
+                }
+            }
+            else
+                throw new ArgumentException("Path does not exist");
+
+            return valid;
+        }
+
+        private static bool ToDateTime(string str, bool assumeUTC, out DateTime result)
+        {
+            // From page 28 of the Exif 2.2 spec (http://www.exif.org/Exif2-2.PDF): 
+
+            // "When the field is left blank, it is treated as unknown ... When the date and time are unknown, 
+            // all the character spaces except colons (":") may be filled with blank characters"
+            if (string.IsNullOrEmpty(str) || _nullDateTimeMatcher.IsMatch(str))
+            {
+                result = DateTime.MinValue;
+                return false;
+            }
+
+            // Do Conversion
+            DateTimeStyles style = assumeUTC ? DateTimeStyles.AssumeUniversal : DateTimeStyles.AssumeLocal;
+
+            // There are 2 types of date - full date/time stamps, and plain dates. Dates are 10 characters long.
+            if (str.Length == 10)
+            {
+                result = DateTime.ParseExact(str, "yyyy:MM:dd", CultureInfo.InvariantCulture, style);
+                return true;
+            }
+
+            // "The format is "YYYY:MM:DD HH:MM:SS" with time shown in 24-hour format, and the date and time separated by one blank character [20.H].
+            result = DateTime.ParseExact(str, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, style);
+
+            if (assumeUTC)
+                result = result.ToUniversalTime();
+            else
+                result = result.ToLocalTime();
+
+            return true;
         }
     }
 }
