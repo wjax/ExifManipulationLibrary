@@ -14,6 +14,7 @@ namespace ExifManipulationLibrary
     public class ExifManipulator
     {
         private static readonly Regex _nullDateTimeMatcher = new Regex(@"^[\s0]{4}[:\s][\s0]{2}[:\s][\s0]{5}[:\s][\s0]{2}[:\s][\s0]{2}$");
+        private const string _subSecPattern = @"^[0-9]+$";
 
         private static void DecimalDeg2Triple(double degrees, out int d, out int m, out double s)
         {
@@ -159,7 +160,7 @@ namespace ExifManipulationLibrary
         
         private static DateTime AddSubsecTimeDigitized (DateTime datePictureTaken, string subSec)
         {
-            if (subSec != null)
+            if (subSec != null && Regex.IsMatch(subSec, _subSecPattern))
             {
                 subSec = $"0.{subSec.Trim()}";
                 double dSubSeconds = double.Parse(subSec, CultureInfo.InvariantCulture);
