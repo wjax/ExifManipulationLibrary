@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0</TargetFrameworks>
@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="ExifLib" Version="1.8.0" />
-    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="8.4.0" />
+    <PackageReference Include="Magick.NET-Q8-AnyCPU" Version="13.3.0" />
   </ItemGroup>
 
   <ItemGroup>
